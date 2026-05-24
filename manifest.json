@@ -1,0 +1,11 @@
+{
+    "id": "bidirectional-folgezettel",
+    "name": "Bidirectional Folgezettel",
+    "version": "1.2.2",
+    "minAppVersion": "1.0.0",
+    "description": "Creates bidirectional links between parent and child notes based on folgezettel indexing patterns. Supports wikilinks and markdown-style links, plus templates for child notes via core Templates or Templater plugins.",
+    "author": "Translated from org-roam-folgezettel.el by Blaine Mooers",
+    "authorUrl": "https://github.com/MooersLab",
+    "isDesktopOnly": false,
+    "fundingUrl": ""
+}
