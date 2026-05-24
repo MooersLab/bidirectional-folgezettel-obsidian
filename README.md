@@ -53,7 +53,7 @@ If the plugin is listed in the community catalog, open **Settings** then **Commu
 ### Manual installation
 
 1. Download `main.js` and `manifest.json` from the latest release.
-2. Create the folder `<vault>/.obsidian/plugins/bidirectional-folgezettel/`.
+2. Create the folder `<vault>/.obsidian/plugins/bidirectional-folgezettel-obsidian/`.
 3. Copy the two files into that folder.
 4. Reload Obsidian.
 5. Enable the plugin in **Settings** then **Community plugins**.
@@ -61,8 +61,8 @@ If the plugin is listed in the community catalog, open **Settings** then **Commu
 ### From source
 
 ```bash
-git clone https://github.com/MooersLab/bidirectional-folgezettel
-cd bidirectional-folgezettel
+git clone https://github.com/MooersLab/bidirectional-folgezettel-obsidian
+cd bidirectional-folgezettel-obsidian
 make install
 make build
 ```
