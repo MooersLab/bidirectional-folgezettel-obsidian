@@ -10,7 +10,7 @@ Automatic bidirectional linking for folgezettel-style note addresses in Obsidian
 Folgezettel is a hierarchical note-addressing system derived from Niklas Luhmann's Zettelkasten methodology. This variant is friendly to computer filenames. Notes receive structured addresses such as `1.2a3c` that encode where each note sits in the tree.
 
 | Address | Meaning |
-|---------|---------|
+|:---------|:---------|
 | `1` | Root note |
 | `1.2` | Second branch of note 1 |
 | `1.2a` | First child of 1.2 |
@@ -73,15 +73,16 @@ Then copy the generated `main.js` and `manifest.json` into your vault's plugin f
 
 ### Commands
 
-All commands appear in the command palette and can be bound to hotkeys.
+All commands appear in the command palette (the icon that looks like a prompt) and can be bound to hotkeys.
+`M` is the Meta key and is usually the Option key.
 
-| Command | Description |
-|---------|-------------|
-| **Add backlink to parent note** | Writes the bidirectional link between the active note and its parent. |
-| **Create next child note** | Creates the next sibling note, inferred from the cursor, and links it. |
-| **Suggest next child address** | Shows the next available child address without creating a note. |
-| **Select template for new note** | Picks a template, then creates a new note from it. |
-| **Create new folgezettel note** | Creates a note, seeding the address from the cursor when possible. |
+| Command | Description | Suggested keybinding|
+|:---------|:-------------|:---------|
+| **Add backlink to parent note** | Writes the bidirectional link between the active note and its parent. | M-p |
+| **Create next child note** | Creates the next sibling note, inferred from the cursor, and links it. | M-n |
+| **Suggest next child address** | Shows the next available child address without creating a note. | M-c |
+| **Select template for new note** | Picks a template, then creates a new note from it. | M-t |
+| **Create new folgezettel note** | Creates a note, seeding the address from the cursor when possible. | M-a |
 
 A ribbon icon labelled "Folgezettel: Add parent link" runs the backlink command.
 
@@ -89,15 +90,20 @@ A ribbon icon labelled "Folgezettel: Add parent link" runs the backlink command.
 
 When you run **Create next child note**, the plugin looks at where your cursor sits in the current note.
 
-If the cursor is inside a list of links to child notes, the plugin takes the highest index already present in that list, increments it to the next sibling, and appends the new link to the bottom of that same list under the same heading. The new note's title and filename are both seeded with the computed index, so you can start typing the rest of the title right away. Because the heading above the list already identifies the category, the plugin does not ask you to choose a scheme when you add a root note to the `00.0` index.
+If the cursor is inside a list of links to child notes, the plugin takes the highest index already present in that list, increments it to the next sibling, and appends the new link to the bottom of that same list under the same heading. 
+The new note's title and filename are both seeded with the computed index, so you can start typing the rest of the title right away. 
+Because the heading above the list already identifies the category, the plugin does not ask you to choose a scheme when you add a root note to the `00.0` index.
 
 If the cursor is not inside such a list, the plugin creates the next top-level sibling of the current note instead, increments the current note's own address, and links it under the current note's parent.
 
-The **Create new folgezettel note** command uses the same inference. It falls back to a name prompt only when the active note has no folgezettel address to work from.
+The **Create new folgezettel note** command uses the same inference. 
+It falls back to a name prompt only when the active note has no folgezettel address to work from.
 
 ### Automatic linking
 
-When automatic processing is enabled, which is the default, the plugin acts on two events. On note creation, if the new note's title contains a folgezettel address, it creates the links to and from the parent note. On manual linking, when you insert a link to another note, it adds the reciprocal link to the target note.
+When automatic processing is enabled, which is the default, the plugin acts on two events. 
+On note creation, if the new note's title contains a folgezettel address, it creates the links to and from the parent note. 
+On manual linking, when you insert a link to another note, it adds the reciprocal link to the target note.
 
 ### Hotkeys
 
@@ -110,7 +116,7 @@ When automatic processing is enabled, which is the default, the plugin acts on t
 The settings tab groups the options under headings.
 
 | Setting | Description | Default |
-|---------|-------------|---------|
+|:---------|:-------------|:---------|
 | Auto-process new notes | Add folgezettel links and apply templates when notes are created | On |
 | Show notifications | Display a notice when links are inserted | On |
 | Auto bidirectional cross-links | Create reciprocal links when you manually insert a link | On |
@@ -155,7 +161,8 @@ make clean          Remove build artifacts
 make all            Run lint, tests, and build
 ```
 
-The `make build` target runs `tsc --noEmit --skipLibCheck` and then bundles with esbuild. The `node_modules` esbuild binary is platform-specific, so build on the same operating system where you installed dependencies.
+The `make build` target runs `tsc --noEmit --skipLibCheck` and then bundles with esbuild. 
+The `node_modules` esbuild binary is platform-specific, so build on the same operating system where you installed dependencies.
 
 ### Project structure
 
