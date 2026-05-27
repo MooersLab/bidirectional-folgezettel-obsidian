@@ -210,6 +210,7 @@ The suite uses ts-jest in a node environment, with the Obsidian API mocked in `_
 |:-------:|---------|:----:|
 | 1.3.0 | New "Create first child note" command. It starts a new child list under a childless note, computes the first child address, writes the heading and first link, and opens the new child. Suggested keybinding M-f. | 2026 May 27 |
 | 1.2.2 | Cursor-aware next-sibling creation. The command infers the next address from cursor position, seeds the title and filename, removes the subject-versus-project prompt, and appends each child link to the bottom of its list. | 2026 May 24 |
+| 1.3.0 | Add first child note function.  |2026 May 27 |
 
 ## Funding
 
