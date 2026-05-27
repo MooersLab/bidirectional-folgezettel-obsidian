@@ -81,13 +81,20 @@ All commands appear in the command palette (the icon that looks like a prompt) a
 | Command | Description | Suggested keybinding|
 |:---------|:-------------|:---------|
 | **Add backlink to parent note** | Writes the bidirectional link between the active note and its parent. | M-p |
-| **Create first child note** | Starts a new child list under a childless note, links the first child, and opens it. | M-f |
-| **Create next child note** | Creates the next sibling note, inferred from the cursor, and links it. | M-n |
-| **Suggest next child address** | Shows the next available child address without creating a note. | M-c |
+| **Create first child note** | Starts a new child list, links the first child, and opens it. | M-i |
+| **Create next child note** | Creates the next sibling note, inferred from the cursor, and links it. | M-c |
+| **Suggest next child address** | Shows the next available child address without creating a note. | M-a |
 | **Select template for new note** | Picks a template, then creates a new note from it. | M-t |
-| **Create new folgezettel note** | Creates a note, seeding the address from the cursor when possible. | M-a |
+| **Create new folgezettel note** | Creates a note, seeding the address from the cursor when possible. | M-n |
 
 A ribbon icon labelled "Folgezettel: Add parent link" runs the backlink command.
+
+#### Setting the Keybindings or Hotkeys
+
+1. Under the Obsidian pulldown menu in the toolbar, select open **Settings** then **Hotkeys**.
+2. Search for "Bidirectional-Folgezettel: <command>".
+3. Assign your preferred shortcuts.
+
 
 ### How first-child creation works
 
@@ -114,11 +121,6 @@ When automatic processing is enabled, which is the default, the plugin acts on t
 On note creation, if the new note's title contains a folgezettel address, it creates the links to and from the parent note. 
 On manual linking, when you insert a link to another note, it adds the reciprocal link to the target note.
 
-### Hotkeys
-
-1. Open **Settings** then **Hotkeys**.
-2. Search for "Folgezettel".
-3. Assign your preferred shortcuts.
 
 ## Settings
 
