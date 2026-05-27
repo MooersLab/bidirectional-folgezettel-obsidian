@@ -1,6 +1,6 @@
 # Makefile for Bidirectional Folgezettel Obsidian Plugin
 
-.PHONY: all build test test-coverage lint clean dev install
+.PHONY: all build test test-coverage test-first-child lint clean dev install
 
 # Default target: run lint, tests, and build
 all: lint test build
@@ -24,6 +24,10 @@ test:
 # Run tests with coverage report
 test-coverage:
 	npx jest --coverage
+
+# Run only the first-child creation tests
+test-first-child:
+	npx jest -t "firstChildAddress|createFirstChild"
 
 # Run linter
 lint:
