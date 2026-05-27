@@ -556,6 +556,12 @@ export default class BidirectionalFolgezettelPlugin extends Plugin {
         });
 
         this.addCommand({
+            id: 'create-first-child',
+            name: 'Create first child note',
+            callback: () => this.createFirstChild()
+        });
+
+        this.addCommand({
             id: 'create-next-child',
             name: 'Create next child note',
             callback: () => this.createNextChild()
@@ -1190,6 +1196,49 @@ export default class BidirectionalFolgezettelPlugin extends Plugin {
     }
 
     /**
+     * Compute the *first* child address for a parent address, independent of
+     * any children that may already exist. This is the address a brand-new
+     * child list should begin with.
+     *
+     * The kind of the first child is fixed by the parent's last segment so the
+     * number/letter alternation rule is preserved:
+     * - "00.0" (index of indices) -> root integer "1"
+     * - root integer "N" -> dot-number "N.1" (a bare "Na" would be ambiguous
+     *   against multi-digit root numbering)
+     * - parent ending in a number (e.g. "1.2") -> letter child "1.2a"
+     * - parent ending in a letter (e.g. "1.2a") -> number child "1.2a1"
+     *
+     * Returns null when the address cannot be parsed. Note this differs from
+     * suggestNextChild, which returns the next *available* child given the
+     * children already in the vault; firstChildAddress always points at the
+     * very first slot.
+     */
+    firstChildAddress(parentAddress: string): string | null {
+        // Special case: 00.0 index's first child is the first root integer.
+        if (parentAddress === '00.0') {
+            return '1';
+        }
+
+        // Special case: root integer parents start their children at dot-1.
+        if (/^[0-9]+$/.test(parentAddress)) {
+            return `${parentAddress}.1`;
+        }
+
+        const parsed = this.parseAddress(parentAddress);
+        if (!parsed || parsed.segments.length === 0) return null;
+
+        const lastSegment = parsed.segments[parsed.segments.length - 1];
+
+        // Parent ends with a number -> first child is the letter "a".
+        if (typeof lastSegment === 'number') {
+            return `${parentAddress}a`;
+        }
+
+        // Parent ends with a letter -> first child is the number "1".
+        return `${parentAddress}1`;
+    }
+
+    /**
      * Suggest a dot-notation child (for root numbers only).
      */
     suggestDotNotationChild(parentAddress: string): string | null {
@@ -1753,6 +1802,60 @@ export default class BidirectionalFolgezettelPlugin extends Plugin {
      * title and filename are seeded with the inferred index, so there is
      * nothing to backspace over and no address dialog is shown.
      */
+    /**
+     * Start a new list of child notes under the active note and create its
+     * first child.
+     *
+     * Where "Create next child note" appends the next sibling to an existing
+     * list, this command bootstraps the list itself: it computes the first
+     * child address for the active note (see firstChildAddress), writes the
+     * forward link under the forward-link heading (creating the heading when it
+     * is absent), writes the matching backlink into the new child, and opens
+     * the child with its index already in the title.
+     *
+     * The active note must carry a folgezettel address and must not already
+     * have children; when children exist the first slot is taken, so the
+     * command defers to "Create next child note" instead of clobbering them.
+     */
+    async createFirstChild() {
+        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!activeView || !activeView.file) {
+            new Notice('No active note');
+            return;
+        }
+
+        const currentAddress = this.extractFromTitle(activeView.file.basename);
+        if (!currentAddress) {
+            new Notice('No folgezettel address found in note title');
+            return;
+        }
+
+        // Refuse to start a new list when one already exists; the first child
+        // would collide with an existing note. Point the user at the append
+        // command instead.
+        if (this.findChildrenOf(currentAddress).length > 0) {
+            new Notice('This note already has child notes; use "Create next child note" to extend the list');
+            return;
+        }
+
+        const address = this.firstChildAddress(currentAddress);
+        if (!address) {
+            new Notice('Could not determine the first child address');
+            return;
+        }
+
+        // The 00.0 index files its root-integer children under a named index
+        // heading rather than the generic forward-link heading.
+        const headingOverride =
+            currentAddress === '00.0' ? INDEX_HEADINGS[0] : undefined;
+
+        await this.createSiblingFromPlan({
+            address,
+            parentFile: activeView.file,
+            headingOverride
+        });
+    }
+
     async createNextChild() {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!activeView || !activeView.file) {
