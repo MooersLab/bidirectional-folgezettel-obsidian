@@ -1,6 +1,6 @@
 # Bidirectional Folgezettel Plugin for Obsidian
 
-![Version](https://img.shields.io/static/v1?label=bidirectional-folgezettel&message=1.2.2&color=brightgreen)
+![Version](https://img.shields.io/static/v1?label=bidirectional-folgezettel&message=1.3.0&color=brightgreen)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Automatic bidirectional linking for folgezettel-style note addresses in Obsidian. When you create a note whose title carries a folgezettel address, the plugin links it to its parent and writes the matching link back into the parent, so the two notes always point at each other. This plugin is a TypeScript translation of the `org-roam-folgezettel.el` Emacs package by Blaine Mooers, and it runs on both desktop and mobile.
@@ -33,6 +33,8 @@ A few rules govern the addresses.
 **Automatic parent linking.** When you create a note whose title contains a folgezettel address, the plugin finds the parent address and links the new note to it.
 
 **Bidirectional links.** A backlink to the parent is written into the child note, and a forward link to the child is written into the parent.
+
+**Start a child list.** The "Create first child note" command bootstraps a brand-new list of children under a note that has none yet. It works out the first child address, writes the forward-link heading and the first link for you, and opens the new child with its index already in the title.
 
 **Cursor-aware next-sibling creation.** The "Create next child note" command reads your cursor position and works out the next address for you, so there is nothing to type and no placeholder to delete.
 
@@ -79,12 +81,19 @@ All commands appear in the command palette (the icon that looks like a prompt) a
 | Command | Description | Suggested keybinding|
 |:---------|:-------------|:---------|
 | **Add backlink to parent note** | Writes the bidirectional link between the active note and its parent. | M-p |
+| **Create first child note** | Starts a new child list under a childless note, links the first child, and opens it. | M-f |
 | **Create next child note** | Creates the next sibling note, inferred from the cursor, and links it. | M-n |
 | **Suggest next child address** | Shows the next available child address without creating a note. | M-c |
 | **Select template for new note** | Picks a template, then creates a new note from it. | M-t |
 | **Create new folgezettel note** | Creates a note, seeding the address from the cursor when possible. | M-a |
 
 A ribbon icon labelled "Folgezettel: Add parent link" runs the backlink command.
+
+### How first-child creation works
+
+**Create first child note** is for a note that does not yet have any children. The plugin reads the active note's own address and works out the address of its first child, honoring the number-and-letter alternation. The first child of a root integer such as `7` is `7.1`; the first child of `7.1` is `7.1a`; the first child of `7.1a` is `7.1a1`; and the first child of the `00.0` index is the root integer `1`. The plugin writes the forward-link heading if it is missing, adds the link to the first child under it, writes the matching backlink into the new child, and opens the child with its index already in the title.
+
+If the note already has children, the first slot is taken, so the command declines and asks you to use **Create next child note** instead, which appends to the existing list rather than overwriting it.
 
 ### How next-sibling creation works
 
@@ -156,6 +165,7 @@ make dev            Run development mode with file watching
 make build          Type-check and build the production bundle
 make test           Run the Jest test suite
 make test-coverage  Run the tests with a coverage report
+make test-first-child  Run only the first-child creation tests
 make lint           Type-check with tsc (no emit)
 make clean          Remove build artifacts
 make all            Run lint, tests, and build
@@ -198,6 +208,7 @@ The suite uses ts-jest in a node environment, with the Obsidian API mocked in `_
 
 | Version | Changes | Date |
 |:-------:|---------|:----:|
+| 1.3.0 | New "Create first child note" command. It starts a new child list under a childless note, computes the first child address, writes the heading and first link, and opens the new child. Suggested keybinding M-f. | 2026 May 27 |
 | 1.2.2 | Cursor-aware next-sibling creation. The command infers the next address from cursor position, seeds the title and filename, removes the subject-versus-project prompt, and appends each child link to the bottom of its list. | 2026 May 24 |
 
 ## Funding
