@@ -406,6 +406,52 @@ describe('suggestNextChild', () => {
 });
 
 // ===========================================================================
+// firstChildAddress
+// ===========================================================================
+
+describe('firstChildAddress', () => {
+    test('00.0 index first child is root integer 1', () => {
+        expect(createPlugin().firstChildAddress('00.0')).toBe('1');
+    });
+
+    test('root integer first child uses dot notation .1', () => {
+        expect(createPlugin().firstChildAddress('20')).toBe('20.1');
+    });
+
+    test('parent ending in a number gets a letter child', () => {
+        expect(createPlugin().firstChildAddress('1.2')).toBe('1.2a');
+    });
+
+    test('parent ending in a letter gets a number child', () => {
+        expect(createPlugin().firstChildAddress('1.2a')).toBe('1.2a1');
+    });
+
+    test('deeper alternation is preserved', () => {
+        expect(createPlugin().firstChildAddress('1.2a3')).toBe('1.2a3a');
+        expect(createPlugin().firstChildAddress('1.2a3aa')).toBe('1.2a3aa1');
+    });
+
+    test('is independent of existing children in the vault', () => {
+        // Even though 20.1 and 20.2 already exist, the *first* child is still 20.1.
+        const plugin = createPlugin(['20', '20.1', '20.2']);
+        expect(plugin.firstChildAddress('20')).toBe('20.1');
+    });
+
+    test('matches suggestNextChild when no children exist', () => {
+        const plugin = createPlugin(['20']);
+        expect(plugin.firstChildAddress('20')).toBe(plugin.suggestNextChild('20'));
+    });
+
+    test('returns null for an unparseable address', () => {
+        const plugin = createPlugin();
+        const origParse = plugin.parseAddress;
+        plugin.parseAddress = () => null;
+        expect(plugin.firstChildAddress('1.2a')).toBeNull();
+        plugin.parseAddress = origParse;
+    });
+});
+
+// ===========================================================================
 // suggestNextChildForHeading
 // ===========================================================================
 
@@ -1706,6 +1752,65 @@ describe('createNextChild', () => {
     });
 });
 
+describe('createFirstChild', () => {
+    test('creates the first child of a childless note and links both ways', async () => {
+        // "20" has no children yet; its first child is "20.1".
+        const plugin = createPlugin(['20'], { '20': '' });
+        const view = mockView(plugin.findFileByAddress('20'), '', 0);
+        plugin.app.workspace.getActiveViewOfType = () => view;
+        await plugin.createFirstChild();
+
+        const files = plugin.app.vault.getMarkdownFiles();
+        expect(files.find((f: any) => f.basename === '20.1')).toBeTruthy();
+
+        // Forward link written into the parent under the default heading.
+        const parentContent = readStore(plugin, '20.md');
+        expect(parentContent).toContain('## Child Notes');
+        expect(parentContent).toContain('[[20.1]]');
+
+        // Backlink written into the new child.
+        const childContent = readStore(plugin, '20.1.md');
+        expect(childContent).toContain('[[20|Parent]]');
+    });
+
+    test('files the first root integer under the index heading for 00.0', async () => {
+        const plugin = createPlugin(['00.0'], { '00.0': '' });
+        const view = mockView(plugin.findFileByAddress('00.0'), '', 0);
+        plugin.app.workspace.getActiveViewOfType = () => view;
+        await plugin.createFirstChild();
+
+        const files = plugin.app.vault.getMarkdownFiles();
+        expect(files.find((f: any) => f.basename === '1')).toBeTruthy();
+        const indexContent = readStore(plugin, '00.0.md');
+        expect(indexContent).toContain('## Subject Matter');
+        expect(indexContent).toContain('[[1]]');
+    });
+
+    test('refuses when the note already has children', async () => {
+        const plugin = createPlugin(['20', '20.1'], { '20': '## Child Notes\n- [[20.1]]\n' });
+        const view = mockView(plugin.findFileByAddress('20'), '', 0);
+        plugin.app.workspace.getActiveViewOfType = () => view;
+        await plugin.createFirstChild();
+
+        // No "20.2" should be created by this command.
+        const files = plugin.app.vault.getMarkdownFiles();
+        expect(files.find((f: any) => f.basename === '20.2')).toBeFalsy();
+    });
+
+    test('does not throw when no active view', async () => {
+        const plugin = createPlugin();
+        plugin.app.workspace.getActiveViewOfType = () => null;
+        await plugin.createFirstChild();
+    });
+
+    test('does not throw when no folgezettel address', async () => {
+        const plugin = createPlugin(['README']);
+        const view = mockView(plugin.findFileByAddress('README'), '', 0);
+        plugin.app.workspace.getActiveViewOfType = () => view;
+        await plugin.createFirstChild();
+    });
+});
+
 describe('nextSiblingAddress', () => {
     test('increments a trailing letter (alternation preserved)', () => {
         const plugin = createPlugin();
@@ -2142,11 +2247,12 @@ describe('onload event handlers', () => {
     // Command callbacks
     // -----------------------------------------------------------------------
 
-    test('onload registers five commands', async () => {
+    test('onload registers six commands', async () => {
         const { commands } = await onloadPlugin();
-        expect(commands.length).toBe(5);
+        expect(commands.length).toBe(6);
         const ids = commands.map((c: any) => c.id);
         expect(ids).toContain('add-backlink-to-parent');
+        expect(ids).toContain('create-first-child');
         expect(ids).toContain('create-next-child');
         expect(ids).toContain('suggest-next-child');
         expect(ids).toContain('select-template-new-note');
